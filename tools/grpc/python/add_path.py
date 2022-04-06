@@ -14,13 +14,13 @@ _TIMEOUT_SECONDS = 1000
 
 
 def run():
-    channel = grpc.insecure_channel('localhost:50051')
+    channel = grpc.insecure_channel('161.170.234.61:50051')
     stub = gobgp_pb2_grpc.GobgpApiStub(channel)
 
     nlri = Any()
     nlri.Pack(attribute_pb2.IPAddressPrefix(
-        prefix_len=24,
-        prefix="10.0.0.0",
+        prefix_len=32,
+        prefix="192.168.1.111",
     ))
     origin = Any()
     origin.Pack(attribute_pb2.OriginAttribute(
@@ -37,12 +37,24 @@ def run():
     ))
     next_hop = Any()
     next_hop.Pack(attribute_pb2.NextHopAttribute(
-        next_hop="1.1.1.1",
+        next_hop="161.170.234.61",
     ))
     attributes = [origin, as_path, next_hop]
 
-    stub.AddPath(
-        gobgp_pb2.AddPathRequest(
+    # stub.AddPath(
+    #     gobgp_pb2.AddPathRequest(
+    #         table_type=gobgp_pb2.GLOBAL,
+    #         path=gobgp_pb2.Path(
+    #             nlri=nlri,
+    #             pattrs=attributes,
+    #             family=gobgp_pb2.Family(afi=gobgp_pb2.Family.AFI_IP, safi=gobgp_pb2.Family.SAFI_UNICAST),
+    #         )
+    #     ),
+    #     _TIMEOUT_SECONDS,
+    # )
+
+    stub.DeletePath(
+        gobgp_pb2.DeletePathRequest(
             table_type=gobgp_pb2.GLOBAL,
             path=gobgp_pb2.Path(
                 nlri=nlri,
@@ -52,6 +64,7 @@ def run():
         ),
         _TIMEOUT_SECONDS,
     )
+
 
 if __name__ == '__main__':
     run()
